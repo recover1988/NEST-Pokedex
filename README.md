@@ -4,6 +4,40 @@
 
 # Pokedex App
 
+## Readme
+
+# Ejecutar en desarrollo
+
+1. Clonar el repositorio
+2. Ejecutar
+
+```
+npm install
+```
+
+3. Tener Nest CLI instalado
+
+```
+npm i -g @nestjs/cli
+```
+
+4. Levanta la base de datos
+
+```
+docker-compose up -d
+```
+
+5. Ejecutar seeed
+
+```
+
+```
+
+## Stack Usado
+
+- MongoDB
+- Nest
+
 ## Levantar servidor
 
 ```
@@ -137,3 +171,39 @@ docker-compose up -d
 
 Podemos ver en el Docker-Desktop que la base de datos esta corriendo.
 Podemos destruir el contenedor y con el comando volverlo a reconstruir y gracias al respaldo que hicimos podemos recuperar la data.
+
+# Conectar Nest con Mongo
+
+Instalar:
+
+```
+npm i @nestjs/mongoose mongoose
+```
+
+Luegon en el `app.module.ts` ponemos el `MongooseModule.forRoot()` y dentro la direccion `URI` o `url`, si usamos otra instancia de mongo en la direccion url podemos enviar las credenciales para conectarse.
+
+```
+import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
+import { PokemonModule } from './pokemon/pokemon.module';
+import { MongooseModule } from '@nestjs/mongoose';
+
+
+@Module({
+  imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
+
+    MongooseModule.forRoot('mongodb://localhost:27017/nest-pokemon'),
+
+    PokemonModule,
+  ],
+})
+export class AppModule {
+
+}
+
+```
+## Crear esquema y modelos
