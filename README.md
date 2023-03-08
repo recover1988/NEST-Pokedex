@@ -106,4 +106,34 @@ http://localhost:3000/api/pokemon
 ## Dockero-Compose
 
 Levanta la imagen y los servicios.
-Creamos un archivo que se va a llamar `docker-compose.yaml`, en este archivo es importante los espacios.
+Creamos un archivo que se va a llamar `docker-compose.yaml`, en este archivo es importante los espacios. Es como archivo json pero usa tabulaciones para hacer las agrupaciones.
+
+```
+version: "3"
+
+services:
+  db:
+    image: mongo:5.0.0
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGODB_DATABASE: nest-pokemon
+    volumes:
+      - ./mongo:/data/db
+```
+
+Algunos puntos importantes:
+`image:` aca especificamos la imagen que queremos usar.
+`ports:` el primero es el de nuestra maquina y el segundo del contenedor que esta aislado, mediante este puerto accedemos al contenedor.
+`environment:` especificamos algunas variables de entorno(ver documentacion de la imangen).
+`volumes:` creamos una carpeta donde guardaremos los elementos de la imagen.
+
+Para corre el servidor:
+
+```
+docker-compose up -d
+```
+
+Podemos ver en el Docker-Desktop que la base de datos esta corriendo.
+Podemos destruir el contenedor y con el comando volverlo a reconstruir y gracias al respaldo que hicimos podemos recuperar la data.
