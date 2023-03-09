@@ -27,10 +27,10 @@ npm i -g @nestjs/cli
 docker-compose up -d
 ```
 
-5. Ejecutar seeed
+5. Reconstruir la base de datos con la semilla
 
 ```
-
+http://localhost:3000/api/v2/seed
 ```
 
 ## Stack Usado
@@ -553,3 +553,170 @@ Con el generate resource creamos todo un CRUD del cual solo necesitaremos una pe
 ```
 nest g res seed --no-spec
 ```
+
+## Usar el mongoose en otro componente
+
+Primero tenemos que exportar el mongoose con toda su configuracion:
+
+```
+import { Module } from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { PokemonController } from './pokemon.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Pokemon, PokemonSchema } from './entities/pokemon.entity';
+
+@Module({
+  controllers: [PokemonController],
+  providers: [PokemonService],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: Pokemon.name,
+        schema: PokemonSchema,
+      }
+    ])
+  ],
+  exports: [MongooseModule]
+})
+export class PokemonModule { }
+```
+
+Y en el modulo en el cual queremos usarlo tenemos que importar el modulo:
+
+```
+import { Module } from '@nestjs/common';
+import { SeedService } from './seed.service';
+import { SeedController } from './seed.controller';
+import { PokemonModule } from 'src/pokemon/pokemon.module';
+
+@Module({
+  controllers: [SeedController],
+  providers: [SeedService],
+  imports:[PokemonModule]
+})
+export class SeedModule {}
+
+```
+
+Aca se importa el `PokemonModule` el cual exporta el `MongooseModule`
+
+Ahora si en el `SEED` podemos usarlo de la siguiente forma:
+
+```
+import { Injectable } from '@nestjs/common';
+import axios, { AxiosInstance } from 'axios';
+import { PokeResponse } from './interfaces/poke-response.interface';
+import { InjectModel } from '@nestjs/mongoose';
+import { Pokemon, PokemonDocument } from 'src/pokemon/entities/pokemon.entity';
+import { Model } from 'mongoose';
+
+@Injectable()
+export class SeedService {
+  constructor(
+    @InjectModel(Pokemon.name)
+    private pokemonModel: Model<PokemonDocument>
+  ) { }
+
+  private readonly axios: AxiosInstance = axios;
+
+  async executeSeed() {
+    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=150`)
+
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+      const no = +segments[segments.length - 2];
+      const pokemon = { no, name };
+      this.pokemonModel.create(pokemon);
+    })
+
+    return data.results;
+  }
+}
+
+```
+
+Hacemos la ` @InjectModel(Pokemon.name)` que es la inyeccion del modelo asi lo podemos usar en el servicio y luego creamos la entrada en la base de datos `this.pokemonModel.create(pokemon)`.
+
+# 3 Formas de Insertar en MongoDB
+
+1. Es haciendo una insercion por cada valor que tengamos:
+
+```
+  async executeSeed() {
+
+    await this.pokemonModel.deleteMany();
+
+    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=150`)
+
+    data.results.forEach(async({ name, url }) => {
+      const segments = url.split('/');
+      const no = +segments[segments.length - 2];
+      const pokemon = { no, name };
+      await this.pokemonModel.create(pokemon);
+    })
+
+    return 'SEED executed';
+}
+
+```
+
+Este es el que mas tarda debido a que por cada insercion hace un await.
+
+2. Promise.all
+   La segunda forma es crearse un array de promesas, y luego realizar un Promise.all esta es mas efectiva que la anterior.
+
+```
+  async executeSeed() {
+
+    await this.pokemonModel.deleteMany();
+
+    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=150`)
+
+    const insertPromisesArray = [];
+
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+      const no = +segments[segments.length - 2];
+      const pokemon = { no, name };
+      insertPromisesArray.push(this.pokemonModel.create(pokemon));
+    })
+
+    await Promise.all(insertPromisesArray);
+
+    return 'SEED executed';
+}
+```
+
+Ahora el forEach no es asincrono y solo crea el array de promesas para luego ejecutar el promise.all
+
+3. Bulk create
+
+```
+  async executeSeed() {
+
+    await this.pokemonModel.deleteMany();
+
+    const { data } = await this.axios.get<PokeResponse>(`https://pokeapi.co/api/v2/pokemon?limit=150`)
+
+    const pokemonToInsert: { name: string, no: number }[] = [];
+
+    data.results.forEach(({ name, url }) => {
+      const segments = url.split('/');
+      const no = +segments[segments.length - 2];
+      const pokemon = { no, name };
+      pokemonToInsert.push(pokemon);
+    })
+
+    await this.pokemonModel.insertMany(pokemonToInsert);
+
+    return 'SEED executed';
+}
+
+```
+
+Con el forEach creamo un array de objetos con lo valores que queremos. Y luego los insertamos a Mongo con el `.inserMany()` el cual admite un array de objetos.
+
+
+## Crear un custom Provider
+
+Crear una implementacion o wrapper propia
