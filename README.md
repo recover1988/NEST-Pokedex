@@ -206,4 +206,59 @@ export class AppModule {
 }
 
 ```
+
 ## Crear esquema y modelos
+
+Al usar nest podemos usar los decoradores que nos proporciona la libreria.
+
+```
+import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument } from 'mongoose';
+
+export type PokemonDocument = HydratedDocument<Pokemon>;
+
+
+@Schema()
+export class Pokemon {
+    //id: string // Mongo lo crea
+    @Prop({
+        unique: true,
+        index: true,
+    })
+    name: string;
+
+
+    @Prop()
+    no: number;
+
+}
+
+export const PokemonSchema = SchemaFactory.createForClass(Pokemon);
+```
+
+Para insrtar este schema en la base de datos tenemos que ir al module del componente:
+
+```
+import { Module } from '@nestjs/common';
+import { PokemonService } from './pokemon.service';
+import { PokemonController } from './pokemon.controller';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Pokemon, PokemonSchema } from './entities/pokemon.entity';
+
+@Module({
+  controllers: [PokemonController],
+  providers: [PokemonService],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: Pokemon.name,
+        schema: PokemonSchema,
+      }
+    ])
+  ]
+})
+export class PokemonModule { }
+```
+
+En los imports ponemos `MongooseModule.forFeature()` y enviamos el nombre y el shcema que creamos.
+Si hay mas modelos y entidades las podemos agregar poniendolos en el array de objetos.
