@@ -533,3 +533,10 @@ Y la funcion quedaria asi:
   }
 
 ```
+
+# Crear SEED
+Con el generate resource creamos todo un CRUD del cual solo necesitaremos una peticion @GET
+```
+nest g res seed --no-spec
+```
+
