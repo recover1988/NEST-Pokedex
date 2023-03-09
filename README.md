@@ -443,3 +443,20 @@ async findOne(term: string) {
 ```
 
 Podemos hacer distintas comprobacionese si es un numero con el `!isNaN(+term)`, `!pokemon && isValidObjectId(term)` o si todavia no encontro por el name que lanze un error de `NotFoundException`
+
+## Update
+
+```
+async update(term: string, updatePokemonDto: UpdatePokemonDto) {
+
+    const pokemon = await this.findOne(term);
+
+    if (updatePokemonDto.name) {
+      updatePokemonDto.name = updatePokemonDto.name.toLowerCase();
+    }
+    await pokemon.updateOne(updatePokemonDto, { new: true });
+    return { ...pokemon.toJSON(), ...updatePokemonDto };
+  }
+```
+
+El tipo de pokemon es `PokemonDocument` de esta forma tendra los metodos que necesitamos para realizar el update.
