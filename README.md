@@ -38,6 +38,18 @@ docker-compose up -d
 - MongoDB
 - Nest
 
+## Retornar a un commit anterior
+
+```
+git add .
+```
+
+Revertir al utlimo commit
+
+```
+git checkout --.
+```
+
 ## Levantar servidor
 
 ```
@@ -535,8 +547,9 @@ Y la funcion quedaria asi:
 ```
 
 # Crear SEED
+
 Con el generate resource creamos todo un CRUD del cual solo necesitaremos una peticion @GET
+
 ```
 nest g res seed --no-spec
 ```
-
