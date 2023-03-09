@@ -782,3 +782,27 @@ Y ahora lo inyectamos en nuestro servicio.
 ```
 
 Lo inyectamos en el constructor y lo usamos como si fuera un axios.
+
+## Paginacion
+
+Para la paginacion tenemos que usar en la url las propiedades de `offset` y `limit` que le indican a la API desde que objeto tiene que enviar y en que cantidad.
+
+Como la paginacion es un servicio comun lo ponemos en la carpeta `common`. Y creamos el `dto`.
+
+```
+import { IsOptional, IsPositive, Min } from "class-validator";
+
+export class PaginationDto {
+
+    @IsOptional()
+    @IsPositive()
+    @Min(1)
+    limit: number;
+
+    @IsOptional()
+    @IsPositive()
+    offset: number;
+}
+```
+
+La opcion del limite es para indicar la cantidad y el offset indica el indice o start
