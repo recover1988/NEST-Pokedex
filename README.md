@@ -460,3 +460,76 @@ async update(term: string, updatePokemonDto: UpdatePokemonDto) {
 ```
 
 El tipo de pokemon es `PokemonDocument` de esta forma tendra los metodos que necesitamos para realizar el update.
+
+## Delete
+
+```
+  async remove(id: string) {
+    const pokemon = await this.findOne(id);
+    await pokemon.deleteOne();
+  }
+```
+
+# Custom Pipe
+
+Los Pipes transforman la data.
+Creamos un modulo common para poder ordenar y meter archivos comunes como los pipes personalizados.
+
+```
+nest g mo common
+```
+
+Luego creamos el pipe personalizado:
+
+```
+nest g pi common/pipes/parseMongoId --no-spec
+```
+
+Los pipe no actualizan ningun modulos al ser creados.
+
+Personalizamos nuestro pipe para rechazar mongo id invalidos:
+
+```
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
+import { isValidObjectId } from 'mongoose';
+
+@Injectable()
+export class ParseMongoIdPipe implements PipeTransform {
+
+  transform(value: string, metadata: ArgumentMetadata) {
+    if (!isValidObjectId(value)) {
+      throw new BadRequestException(`${value} is not a valid mongo id`)
+    }
+    return value;
+  }
+
+}
+```
+
+Y lo usamos en la funcion @Delete() del controlador.
+
+```
+  @Delete(':id')
+  remove(@Param('id', ParseMongoIdPipe) id: string) {
+    return this.pokemonService.remove(id);
+  }
+```
+
+Y la funcion quedaria asi:
+
+```
+ async remove(id: string) {
+    // const pokemon = await this.findOne(id);
+    // await pokemon.deleteOne();
+
+    // const result = await this.pokemonModel.findByIdAndDelete(id);
+
+    // const result = await this.pokemonModel.deleteOne({ _id: id });
+    const { deletedCount } = await this.pokemonModel.deleteOne({ _id: id });
+    if (deletedCount === 0) {
+      throw new BadRequestException(`Pokemon with id "${id}" not found`)
+    }
+    return
+  }
+
+```
