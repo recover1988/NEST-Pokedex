@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
+import { Pokemon } from './entities/pokemon.entity';
 
 @Injectable()
 export class PokemonService {
   create(createPokemonDto: CreatePokemonDto) {
-    return 'This action adds a new pokemon';
+    const pokemon: Pokemon = {
+      name: createPokemonDto.name,
+      no: createPokemonDto.no,
+    }
+    return pokemon;
   }
 
   findAll() {

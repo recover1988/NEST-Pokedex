@@ -262,3 +262,45 @@ export class PokemonModule { }
 
 En los imports ponemos `MongooseModule.forFeature()` y enviamos el nombre y el shcema que creamos.
 Si hay mas modelos y entidades las podemos agregar poniendolos en el array de objetos.
+
+## DTO (data transfer object)
+
+Para hacer un objeto validados tenemos que importar las siguientes librerias:
+
+```
+ npm i class-validator class-transformeror class-transformer
+```
+
+Luego en el dto ponemos las validaciones:
+
+```
+import { IsInt, IsPositive, IsString, Min, MinLength } from "class-validator";
+
+export class CreatePokemonDto {
+
+    @IsInt()
+    @IsPositive()
+    @Min(1)
+    no: number;
+
+    @IsString()
+    @MinLength(3)
+    name: string;
+}
+
+```
+
+## Usar validation de manera global
+
+En el `main.ts` tenemos que poner la siguiente configuracion:
+
+```
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+
+```
