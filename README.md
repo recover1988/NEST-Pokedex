@@ -716,7 +716,69 @@ Ahora el forEach no es asincrono y solo crea el array de promesas para luego eje
 
 Con el forEach creamo un array de objetos con lo valores que queremos. Y luego los insertamos a Mongo con el `.inserMany()` el cual admite un array de objetos.
 
-
 ## Crear un custom Provider
 
-Crear una implementacion o wrapper propia
+Crear una implementacion o wrapper propia.
+1 - Crear una interface con los metodos que necesita cualquier proveedor que quiera usarse para realizar la peticion en este caso get:
+
+```
+export interface httpAdapter {
+    get<T>(url: string): Promise<T>;
+}
+```
+
+```
+import axios, { AxiosInstance } from "axios";
+import { HttpAdapter } from "../interfaces/http-adapter.interface";
+import { Injectable } from "@nestjs/common";
+
+
+@Injectable()
+export class AxiosAdapter implements HttpAdapter {
+
+    private axios: AxiosInstance = axios;
+
+
+    async get<T>(url: string): Promise<T> {
+        try {
+            const { data } = await this.axios.get<T>(url);
+            return data;
+        } catch (error) {
+            throw new Error('This is an error - Check Logs')
+        }
+
+    }
+
+}
+```
+
+Tenemos que exportarlo porque este adapter esta a nivel de modulo y queremos usarlo en otros e importarlo.
+
+```
+import { Module } from '@nestjs/common';
+import { SeedService } from './seed.service';
+import { SeedController } from './seed.controller';
+import { PokemonModule } from 'src/pokemon/pokemon.module';
+import { CommonModule } from 'src/common/common.module';
+
+@Module({
+  controllers: [SeedController],
+  providers: [SeedService],
+  imports:[PokemonModule, CommonModule]
+})
+export class SeedModule {}
+
+```
+
+Y ahora lo inyectamos en nuestro servicio.
+
+```
+  constructor(
+    @InjectModel(Pokemon.name)
+    private pokemonModel: Model<PokemonDocument>,
+
+    private readonly http: AxiosAdapter,
+  ) { }
+```
+
+Lo inyectamos en el constructor y lo usamos como si fuera un axios.
