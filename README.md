@@ -304,3 +304,26 @@ En el `main.ts` tenemos que poner la siguiente configuracion:
 
 
 ```
+
+## Inyectar modelo en el servicio
+
+Nos vamos a `pokemon.service.ts` y en el constructor inyectamos el modelo:
+
+```
+import { Model } from 'mongoose';
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+
+import { Pokemon, PokemonDocument } from './entities/pokemon.entity';
+
+@Injectable()
+export class PokemonService {
+
+  constructor(
+    @InjectModel(Pokemon.name) private pokemonModel: Model<PokemonDocument>
+  ) { }
+
+}
+```
+
+Usamos el decorador `@InjectModel()` y el tipo es Model<>

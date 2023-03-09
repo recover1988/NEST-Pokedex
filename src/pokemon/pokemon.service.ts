@@ -1,16 +1,24 @@
+import { Model } from 'mongoose';
 import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+
+import { Pokemon, PokemonDocument } from './entities/pokemon.entity';
+
 import { CreatePokemonDto } from './dto/create-pokemon.dto';
 import { UpdatePokemonDto } from './dto/update-pokemon.dto';
-import { Pokemon } from './entities/pokemon.entity';
 
 @Injectable()
 export class PokemonService {
-  create(createPokemonDto: CreatePokemonDto) {
-    const pokemon: Pokemon = {
-      name: createPokemonDto.name,
-      no: createPokemonDto.no,
-    }
-    return pokemon;
+
+  constructor(
+    @InjectModel(Pokemon.name)
+    private pokemonModel: Model<PokemonDocument>
+  ) { }
+
+  async create(createPokemonDto: CreatePokemonDto) {
+    const createPokemon = new this.pokemonModel(createPokemonDto);
+    createPokemon.save();
+    return createPokemon;
   }
 
   findAll() {
