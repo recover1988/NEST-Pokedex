@@ -414,3 +414,32 @@ export declare enum HttpStatus {
 }
 
 ```
+
+## Find One By Id
+
+```
+async findOne(term: string) {
+
+    let pokemon: Pokemon;
+
+    if (!isNaN(+term)) {
+      pokemon = await this.pokemonModel.findOne({ no: term });
+    }
+
+    // MongoId
+    if (!pokemon && isValidObjectId(term)) {
+      pokemon = await this.pokemonModel.findById(term);
+    }
+
+    // name
+    if (!pokemon) {
+      pokemon = await this.pokemonModel.findOne({ name: term.toLowerCase().trim() });
+    }
+
+    if (!pokemon) throw new NotFoundException(`Pokemon with id, name or "${term} not found"`)
+
+    return pokemon;
+}
+```
+
+Podemos hacer distintas comprobacionese si es un numero con el `!isNaN(+term)`, `!pokemon && isValidObjectId(term)` o si todavia no encontro por el name que lanze un error de `NotFoundException`
