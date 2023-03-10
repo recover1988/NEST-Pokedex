@@ -894,4 +894,42 @@ export const EnvConfiguration = () => ({
 
 ```
 
-Estamso cargando en el ConfigModule las variables de entorno y este tiene un metodo para poder usarlos.
+Estamos cargando en el ConfigModule las variables de entorno y este tiene un metodo para poder usarlos.
+
+### ConfigurationService
+
+Importamos el ConfigModule al modulo de pokemon.
+
+```
+@Module({
+  controllers: [PokemonController],
+  providers: [PokemonService],
+  imports: [
+    ConfigModule,
+    MongooseModule.forFeature([
+      {
+        name: Pokemon.name,
+        schema: PokemonSchema,
+      }
+    ])
+  ],
+  exports: [MongooseModule]
+})
+```
+
+Lo inyectamos en el servicio de pokemon.
+
+```
+  constructor(
+    @InjectModel(Pokemon.name)
+    private pokemonModel: Model<PokemonDocument>,
+    private readonly configService: ConfigService,
+  ) { }
+```
+
+Para usarlo podemos usar un `get()`.
+
+```
+const { limit = this.configService.get<number>('defaultLimit'), offset = 0 } = paginationDto;
+```
+Para que sea vea mejor se puede crear una propiedad privada y luego darle su valor en el constructor asi lo usamos como valor.
