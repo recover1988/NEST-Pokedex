@@ -1001,3 +1001,43 @@ Quedaria asi:
 ```
 
 Los servidores en la nube ejecutan primero el build y luego el start.
+
+# Dockerizar la aplicacion (contenedor)
+
+Explicacion del `Dockerfile`:
+
+```
+FROM node:18-alpine3.15 <-- es la version de linux (alphine) con el node 18 preinstalado
+
+# Set working directory
+RUN mkdir -p /var/www/pokedex <- Crea un carpeta con el path
+WORKDIR /var/www/pokedex <- Se indica el directorio de trabajo
+
+# Copiar el directorio y su contenido
+COPY . ./var/www/pokedex <- Copia todo de origen a destino COPY [origen] [destino]
+COPY package.json tsconfig.json tsconfig.build.json /var/www/pokedex/ <- estamos copiando los .json hacia el destino que es el path, siempre la ultima propiedad es el destino.
+RUN yarn install --prod <- instalar todas las dependencias que son de produccion
+RUN yarn build <- hace el build
+
+
+# Dar permiso para ejecutar la applicación
+RUN adduser --disabled-password pokeuser  <- Creamos un usuario
+RUN chown -R pokeuser:pokeuser /var/www/pokedex <- registramos al usuario
+USER pokeuser
+
+# Limpiar el caché
+RUN yarn cache clean --force  <-- limpieza de cache
+
+EXPOSE 3000  <- exponemos el puerto
+
+CMD [ "yarn","start" ] <- para correr el servidor
+```
+
+Para no copiar arcivos innecesarios en el contenedor usamos el `.dockerignore` con los archivos:
+
+```
+dist/
+node_modules/
+.gitignore
+.git/
+```
