@@ -932,4 +932,35 @@ Para usarlo podemos usar un `get()`.
 ```
 const { limit = this.configService.get<number>('defaultLimit'), offset = 0 } = paginationDto;
 ```
+
 Para que sea vea mejor se puede crear una propiedad privada y luego darle su valor en el constructor asi lo usamos como valor.
+
+## Validacion de Objetos con JOI
+
+Instalar `joi`
+
+```
+npm i joi
+```
+
+Sirve para validar, lanzar errores y que los objetos sean de la forma esperada.
+Una vez instalado podemos crear un archivo `joi.validation.ts`:
+
+```
+import * as Joi from 'joi';
+
+export const JoiValidationSchema = Joi.object({
+    MONGODB: Joi.required(),
+    PORT: Joi.number().default(3005),
+    DEFAULT_LIMIT: Joi.number().default(6),
+})
+```
+
+Y poner validadores a las variables de entorno, para usarlo lo tenemos que declarar en el `app.module.ts` como un validationSchema dentro del `ConfigModule.forRoot()`
+
+```
+    ConfigModule.forRoot({
+      load: [EnvConfiguration],
+      validationSchema: JoiValidationSchema,
+    }),
+```
