@@ -841,3 +841,57 @@ Ahora podemos usarlos en la funcion:
 ```
 
 Con el `sort` ordenamos y con el `select` quitamos esa propiedad.
+
+# Environment
+
+Crear un `.env` en este archivo van a ir las variables de entorno, hay que agregarlo al `.gitignore`.
+
+## Configuraciones de variables de entorno en Nest
+
+Crear en el root del proyecto el archivo `.env`.
+Instalacion del paquete:
+
+```
+npm i @nestjs/config
+
+yarn add @nestjs/config
+```
+
+Luego en el `app.module.ts` del root hay que agregar la siguiente configuracion:
+
+```
+import {Module} from '@nestjs/common';
+import {ConfigModule} from '@nestjs/config';
+
+@Module({
+  imports: [ConfigModule.forRoot()],
+})
+export class AppModule {}
+```
+
+A esta importacion hay que agregarla al principio de los imports.
+Las variables de entorno siempre son `strings`.
+
+## Crear Config Module
+
+Crearse una funcion que devuelve un objeto con las variables de entorno y inyectarlo en el root del ConfigModule del app.module.ts.
+
+```
+/config.app.config.ts
+
+export const EnvConfiguration = () => ({
+    environment: process.env.NODE_ENV || 'dev',
+    mongodb: process.env.MONGODB,
+    port: process.env.PORT || 3002,
+    defaultLimit: process.env.DEFAULT_LIMIT || 7,
+})
+```
+
+```
+    ConfigModule.forRoot({
+      load: [EnvConfiguration]
+    }),
+
+```
+
+Estamso cargando en el ConfigModule las variables de entorno y este tiene un metodo para poder usarlos.
