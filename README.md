@@ -806,3 +806,38 @@ export class PaginationDto {
 ```
 
 La opcion del limite es para indicar la cantidad y el offset indica el indice o start
+
+Como todo los que viene por url o body es string y nosotros esperamos numeros tenemos que hacer la conversion, una forma es hacerla en el `main.ts` de manera global para eso ponemos las siguientes opciones.
+
+```
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: {
+        enableImplicitConversion: true,
+      }
+    }),
+  );
+```
+
+El `transform: true,` y `transformOptions:` con esta configuracion transformamos en numero.
+
+Ahora podemos usarlos en la funcion:
+
+```
+  findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+
+    return this.pokemonModel.find()
+      .limit(limit)
+      .skip(offset)
+      .sort({
+        no: 1
+      })
+      .select('1__v');
+  }
+```
+
+Con el `sort` ordenamos y con el `select` quitamos esa propiedad.
