@@ -974,3 +974,30 @@ Y poner validadores a las variables de entorno, para usarlo lo tenemos que decla
       validationSchema: JoiValidationSchema,
     }),
 ```
+
+# Desplegar en MongoDB
+
+Ir a la pagina de mongoDB y activar un cluster compartido donde subiremos los datos de nuestra base de datos.
+
+# Desplegar en la nube
+
+Tenemos que hacer un build de la aplicacion.
+
+```
+npm run build
+```
+
+Renombrar el `scripts` de start para que lo levante con el "node dist/main".
+Quedaria asi:
+
+```
+  "scripts": {
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "node dist/main",
+    "start:prod": "nest start",
+    .....
+  }
+```
+
+Los servidores en la nube ejecutan primero el build y luego el start.
