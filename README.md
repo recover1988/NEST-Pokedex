@@ -1004,6 +1004,10 @@ Los servidores en la nube ejecutan primero el build y luego el start.
 
 # Dockerizar la aplicacion (contenedor)
 
+```
+https://gist.github.com/Klerith/e7861738c93712840ab3a38674843490
+```
+
 Explicacion del `Dockerfile`:
 
 ```
@@ -1041,3 +1045,42 @@ node_modules/
 .gitignore
 .git/
 ```
+
+## Conexion al container de mongo
+
+Crearse variables de produccion :`.env.prod`
+
+```
+  db:
+    image: mongo:5
+    container_name: mongo-poke
+    restart: always
+    ports:
+      - 27017:27017
+    environment:
+      MONGODB_DATABASE: nest-pokemon
+    # volumes:
+    #   - ./mongo:/data/db
+```
+
+Para conectarnos a este container debemos usar el `container_name`, `ports` y `MONGODB_DATABASE` y quedaria asi:
+
+```
+MONGODB=mongodb://mongo-poke:27017/nest-pokemon
+```
+
+# Prepara la imagen
+
+Build
+
+```
+docker-compose -f docker-compose.prod.yaml --env-file .env.prod up --build
+```
+
+Run
+
+```
+docker-compose -f docker-compose.prod.yaml --env-file .env.prod up
+```
+
+**Cambiar el yarn por el npm y npm run**
